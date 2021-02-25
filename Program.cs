@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Day8
@@ -8,19 +7,17 @@ namespace Day8
     {
         static void Main(string[] args)
         {
-            //string expression = "32 + 5.2 * ((4.6 ^ 2 – 20 / 3)) – 4 * 2";
-            //string expression = "3 + 6 - 2";
-            //string expression = "3 + 6 * 2";
-            //string expression = "3 + 6 * 2 / 4 - 2";
-            //string expression = "3 + 6 ^ 2 / ((4 - 2) * 2)";
-            //List<string> tokens = TokensFromString(expression);
-
-            Console.Write("Enter a mathematical expression: ");
-            List<string> tokens = TokensFromString(Console.ReadLine());
-            //OutputTokens(tokens);
-            List<string> postfix = PostFixFromInfix(tokens);
-            OutputTokens(postfix);
-
+            string input;
+            while (true) 
+            { 
+                Console.Write("Enter a mathematical expression (or 0 to quit): ");
+                input = Console.ReadLine();
+                if (input == "0") break;
+                List<string> infix = TokensFromString(input);
+                List<string> postfix = PostFixFromInfix(infix);
+                Console.WriteLine($"The answer is {ValueOfPostfixList(postfix)}\n");
+            }
+            Console.WriteLine("Program finished...");
 
             /// FUNCTIONS ///
             static List<string> TokensFromString(string expression)
@@ -123,11 +120,6 @@ namespace Day8
             {
                 switch (op)
                 {
-                    //case "(":
-                    //case "[":
-                    //case "{":
-                    //    return 4;
-
                     case "^": return 3;
                         
                     case "*":
@@ -154,6 +146,51 @@ namespace Day8
                     default:
                         return "";
                 }
+            }
+
+            static double OpResult(double num1, double num2, string op) 
+            {
+                switch (op)
+                {
+                    case "^":
+                        return Math.Pow(num1, num2);
+                    case "*":
+                        return num1 * num2;
+                    case "/":
+                        return num1 / num2;
+                    case "%":
+                        return num1 % num2;
+                    case "+":
+                        return num1 + num2;
+                    case "-":
+                        return num1 - num2;
+                    default:
+                        return -999999;
+                }
+            }
+
+            static double ValueOfPostfixList(List<string> postfixList)
+            {
+                Stack<double> valueStack = new Stack<double>();
+                string cur;
+                for (int i = 0; i < postfixList.Count; i++)
+                {
+                    cur = postfixList[i];
+                    if (double.TryParse(cur, out double num))
+                    {
+                        valueStack.Push(num);
+                    }
+                    else
+                    {
+                        // cur is an operator
+                        if (valueStack.Count < 2) return -999.999;
+                        double num2 = valueStack.Pop();
+                        double num1 = valueStack.Pop();
+                        valueStack.Push(OpResult(num1, num2, cur));
+                    }
+                }
+                if (valueStack.Count != 1) return -999.999;
+                return valueStack.Pop();
             }
         }
     }
