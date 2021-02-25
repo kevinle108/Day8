@@ -7,22 +7,18 @@ namespace Day8
     {
         static void Main(string[] args)
         {
-            string input;
-            while (true) 
-            { 
-                Console.Write("Enter a mathematical expression (or 0 to quit): ");
-                input = Console.ReadLine();
-                if (input == "0") break;
-                List<string> postfix = PostFixFromInfix(TokensFromString(input));
+            while (true)
+            {
+                List<string> infix = InfixListFromUser();
+                List<string> postfix = PostFixFromInfix(infix);
                 double result = ValueOfPostfixList(postfix);
-                if (result == -999.999 || result == -999999)
+                if (result == -999.999 || result == -999999) // WARNING: Valid computed expressions that actually equal -999999 or -999.999 will print as invalid!  
                 {
                     Console.WriteLine("Invalid expression! Please try again.\n");
                 }
                 else
-                Console.WriteLine($"The answer is {ValueOfPostfixList(postfix)}\n");
+                    Console.WriteLine($"The answer is {ValueOfPostfixList(postfix)}\n");
             }
-            Console.WriteLine("Program finished...");
 
             /// FUNCTIONS ///
             static List<string> TokensFromString(string expression)
@@ -212,6 +208,14 @@ namespace Day8
             // for debugging purposes: 
             // a return of -999.999 means stack error
             // a return of -999999 means OpResult error
+
+            static List<string> InfixListFromUser()
+            {
+                Console.Write("Enter a mathematical expression: ");
+                List<string> infix = TokensFromString(Console.ReadLine());
+                return infix;
+            }
+            
         }
     }
 }
