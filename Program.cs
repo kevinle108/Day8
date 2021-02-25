@@ -13,8 +13,13 @@ namespace Day8
                 Console.Write("Enter a mathematical expression (or 0 to quit): ");
                 input = Console.ReadLine();
                 if (input == "0") break;
-                List<string> infix = TokensFromString(input);
-                List<string> postfix = PostFixFromInfix(infix);
+                List<string> postfix = PostFixFromInfix(TokensFromString(input));
+                double result = ValueOfPostfixList(postfix);
+                if (result == -999.999 || result == -999999)
+                {
+                    Console.WriteLine("Invalid expression! Please try again.\n");
+                }
+                else
                 Console.WriteLine($"The answer is {ValueOfPostfixList(postfix)}\n");
             }
             Console.WriteLine("Program finished...");
@@ -27,23 +32,30 @@ namespace Day8
                 bool insideNum = false;
                 for (int i = 0; i < expression.Length; i++)
                 {
-                    char c = expression[i];
-                    if (CharType(expression[i]) == "digit" || CharType(expression[i]) == "decimal")
+                    char cur = expression[i];
+                    if (CharType(cur) == "digit" || CharType(cur) == "decimal")
                     {
                         insideNum = true;
-                        token += expression[i];
+                        token += cur;
                         continue;
                     }
                     else
                     {
-                        if (CharType(expression[i]) == "space") continue;
+                        if (CharType(cur) == "space" && insideNum)
+                        {
+                            tokensList.Add(token);
+                            token = "";
+                            insideNum = false;
+                            continue;
+                        }
+                        if (CharType(cur) == "space" && !insideNum) continue;
                         if (insideNum)
                         {
                             tokensList.Add(token);
                             token = "";
                             insideNum = false;
                         }
-                        tokensList.Add(expression[i].ToString());
+                        tokensList.Add(cur.ToString());
                     }
                 }
                 if (token != "")
@@ -88,10 +100,13 @@ namespace Day8
                         if (cur == ")" || cur == "}" || cur == "]")
                         {
                             string openParenthesis = matchingParenthesis(cur);
-                            while (opStack.Peek() != openParenthesis)
+                            bool emptyStack = opStack.Count == 0;
+                            while (!emptyStack && opStack.Peek() != openParenthesis)
                             {
                                 postfixList.Add(opStack.Pop());
+                                if (opStack.Count == 0) emptyStack = true;    
                             }
+                            if (emptyStack) return new List<string>();
                             opStack.Pop(); // to remove the open parenthesis from the stack
                             continue;
                         }
@@ -186,12 +201,17 @@ namespace Day8
                         if (valueStack.Count < 2) return -999.999;
                         double num2 = valueStack.Pop();
                         double num1 = valueStack.Pop();
-                        valueStack.Push(OpResult(num1, num2, cur));
+                        double result = OpResult(num1, num2, cur);
+                        if (result == -999999) return -999999;
+                        valueStack.Push(result);
                     }
                 }
                 if (valueStack.Count != 1) return -999.999;
                 return valueStack.Pop();
             }
+            // for debugging purposes: 
+            // a return of -999.999 means stack error
+            // a return of -999999 means OpResult error
         }
     }
 }
